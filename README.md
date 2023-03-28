@@ -3,3 +3,4 @@ a data curation pipeline for very large biomedical images, including AI-assisted
 
 ## Utilities
 * [imagecut.py](utils/imagecut.py): cut large images into small image by given x,y,z coordinates and width, height, depth. See `python imagecut.py -h`
+* [imagecombine.py](utils/imagecombine.py): combine small images into one large image. See `python imagecombine.py -h`
