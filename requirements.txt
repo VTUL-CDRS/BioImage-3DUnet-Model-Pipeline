@@ -1,0 +1,8 @@
+scikit-image
+classification-models-3D
+efficientnet-3D
+segmentation-models-3D
+patchify
+scikit-learn
+scipy
+matplotlib
