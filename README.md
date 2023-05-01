@@ -19,3 +19,4 @@ Backbones: ['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152', 'seres
 ## Utilities
 * [imagecut.py](utils/imagecut.py): cut large images into small image by given x,y,z coordinates and width, height, depth. See `python imagecut.py -h`
 * [imagecombine.py](utils/imagecombine.py): combine small images into one large image. See `python imagecombine.py -h`
+* [objectcount.py](utils/objectcount.py): count the number of objects in a given image. See `python objectcount.py -h`
