@@ -1,0 +1,8 @@
+modelfile = "/mnt/research-data/3dunet/model/random_block_sampling/"
+inputfolder = "/home/chongyuh/3dunet/data/images/"
+maskfolder = "/home/chongyuh/3dunet/data/masks/"
+checkpointfolder = "/mnt/research-data/checkpoint_test/random_block_sampling_2_augmentations/"
+load_model = "/mnt/research-data/3dunet/model/random_block_sampling/random_block_sampling_v4_augmentations5000.h5"
+start_epochs = 5000
+epochs = 5000
+steps_per_epoch = 300
