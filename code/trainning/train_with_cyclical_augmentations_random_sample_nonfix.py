@@ -20,7 +20,7 @@ from tifffile import imwrite
 from volumentations import *
 from augmentation import *
 
-def generate_augmented_data(train_images, mask_images, num_augmentations=5):
+def generate_augmented_data(train_images, mask_images, num_augmentations):
     imagelist = []
     masklist = []
 
@@ -131,14 +131,16 @@ def compile_model(model, learning_rate, loss, metrics):
     model.compile(optimizer=optim, loss=loss, metrics=metrics)
 
 
-def random_block_sampling(data_list, labels_list, block_size, min_positive_labels, weights, num_augmentations=5):
+def random_block_sampling(data_list, labels_list, block_size, min_positive_labels, weights, num_augmentations):
 
     sampled_data = None
     sampled_label = None
     while True:
-        # ind = np.random.randint(0, len(data_list))
-        data_index = np.random.choice(len(weights), p=np.array(weights)/sum(weights))
-        ind = data_index * (num_augmentations + 1) + np.random.randint(0, num_augmentations + 1)
+        if weights != None:
+            data_index = np.random.choice(len(weights), p=np.array(weights)/sum(weights))
+            ind = data_index * (num_augmentations + 1) + np.random.randint(0, num_augmentations + 1)
+        else:
+            ind = np.random.randint(0, len(data_list))
 
         data = data_list[ind]
         label = labels_list[ind]
@@ -233,7 +235,7 @@ def process_all_data(images, masks, train_ratio=0.8, block_size=64):
 
 
 
-def train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_per_epoch, start_epochs, weights, load_model = None):
+def train(modelfile, inputfolder, maskfolder, epochs, steps_per_epoch, start_epochs, train_ratio, batch_size, learning_rate, cyclical_augmentations, num_augmentations, random_block_sampling_pixel, weights = None, load_model = None):
 
     # encoder_weights = 'imagenet'
     BACKBONE = 'vgg16'
@@ -241,7 +243,6 @@ def train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_pe
     block_size = (64,64,64)
     patch_size = 64
     channels = 3
-    LR = 0.0001
 
     train_images = read_input_images(inputfolder)
     mask_images = read_input_images(maskfolder)
@@ -265,7 +266,7 @@ def train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_pe
         model = create_model(BACKBONE, classes=1, input_shape=
         # (patch_size, patch_size, patch_size, channels), encoder_weights=encoder_weights, activation=activation)
         (patch_size, patch_size, patch_size, channels), activation=activation)
-        compile_model(model, LR, total_loss, metrics)
+        compile_model(model, learning_rate, total_loss, metrics)
     else:
         model = tf.keras.models.load_model(load_model, custom_objects={
             'dice_loss_plus_1focal_loss': total_loss,
@@ -276,42 +277,44 @@ def train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_pe
 
     ACKBONE = 'vgg16'
     preprocess_input = sm.get_preprocessing(BACKBONE)
-    X_train, X_test, y_train, y_test = process_all_data(train_images, mask_images)
-
-    # X_test = train_images[:1]
-    # y_test = mask_images[:1]
-    
-    # X_train = train_images[1:]
-    # y_train = mask_images[1:]
-
-
+    X_train, X_test, y_train, y_test = process_all_data(train_images, mask_images, train_ratio)
 
     X_test, y_test = prepare_data(X_test, y_test, patch_size)
     X_test = preprocess_input(X_test)
     y_test = tf.cast(y_test, tf.float32)
-
-    X_train_a, y_train_a = generate_augmented_data(X_train, y_train, num_augmentations=5)
-    now = datetime.now()
-    currenttime = now.strftime("%Y-%m-%d_%H_%M_%S")
 
     # record history
     history_total = {'f1-score':[], 'val_f1-score': [], 'loss': [], 'val_loss': [], 'iou_score': [], 'val_iou_score': []}
 
     for epoch in range(epochs):
         print("Epoch:",epoch+1+start_epochs)
-        
+        if epoch % cyclical_augmentations == 0:
+            now = datetime.now()
+            currenttime = now.strftime("%Y-%m-%d_%H_%M_%S")
+            print("generate_augmented_data" + currenttime)
+            X_train_a, y_train_a = generate_augmented_data(X_train, y_train, num_augmentations=num_augmentations)
+            now = datetime.now()
+            currenttime = now.strftime("%Y-%m-%d_%H_%M_%S")
+            print("finish generate_augmented_data" + currenttime)      
+          
         history = None
         sampled_data = []
         sampled_labels = []
+        now = datetime.now()
+        currenttime = now.strftime("%Y-%m-%d_%H_%M_%S")
+        print("random_block_sampling" + currenttime)
         for i in range(int(steps_per_epoch)):
-            sampled_data_c, sampled_labels_c = random_block_sampling(X_train_a, y_train_a, block_size, 2000, weights, num_augmentations=5)
+            sampled_data_c, sampled_labels_c = random_block_sampling(X_train_a, y_train_a, block_size, random_block_sampling_pixel, num_augmentations=num_augmentations)
             sampled_data.append(sampled_data_c)
             sampled_labels.append(sampled_labels_c)
+        now = datetime.now()
+        currenttime = now.strftime("%Y-%m-%d_%H_%M_%S")
+        print("finish random_block_sampling" + currenttime)
 
         X_train_c, y_train_c = prepare_data(sampled_data, sampled_labels, patch_size)
         X_train_c = preprocess_input(X_train_c)
         y_train_c = tf.cast(y_train_c, tf.float32)
-        history = model.fit(X_train_c, y_train_c,validation_data=(X_test, y_test), batch_size=1, epochs=1,verbose=1)
+        history = model.fit(X_train_c, y_train_c,validation_data=(X_test, y_test), batch_size=batch_size, epochs=1,verbose=1)
         
         history_total['loss'].append(history.history['loss'][0])
         history_total['f1-score'].append(history.history['f1-score'][0])
@@ -319,9 +322,6 @@ def train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_pe
         history_total['val_iou_score'].append(history.history['val_iou_score'][0])
         history_total['val_loss'].append(history.history['val_loss'][0])
         history_total['val_f1-score'].append(history.history['val_f1-score'][0])
-
-        if epoch != 0 and (epoch+1) % 25 == 0:
-            X_train_a, y_train_a = generate_augmented_data(X_train, y_train, num_augmentations=5)
 
         if epoch != 0 and (epoch+1) % 50 == 0:
             model.save(modelfile + "random_block_sampling_v4_augmentations" + str(epoch+1+start_epochs) + ".h5")
@@ -349,7 +349,6 @@ def main():
     modelfile = parameters["modelfile"]
     inputfolder = parameters["inputfolder"]
     maskfolder = parameters["maskfolder"]
-    checkpointfolder = parameters["checkpointfolder"]
     load_model = parameters["load_model"]
     start_epochs = int(parameters["start_epochs"])
     epochs = int(parameters["epochs"])
@@ -358,15 +357,20 @@ def main():
     print(f"modelfile: {modelfile}")
     print(f"inputfolder: {inputfolder}")
     print(f"maskfolder: {maskfolder}")
-    print(f"checkpointfolder: {checkpointfolder}")
     print(f"load_model: {load_model}")
     print(f"start_epochs: {start_epochs}")
     print(f"epochs: {epochs}")
     print(f"steps_per_epoch: {steps_per_epoch}")
 
-    weights = [1,1,2,2]
+    batch_size = 1
+    learning_rate = 0.0001
+    cyclical_augmentations = 25
+    train_ratio = 0.8
+    num_augmentations = 5
+    random_block_sampling_pixel = 2000
+    # weights = [1,1,2,2]
 
-    train(modelfile, inputfolder, maskfolder, checkpointfolder, epochs, steps_per_epoch, start_epochs, weights, load_model = load_model)
+    train(modelfile, inputfolder, maskfolder, epochs, steps_per_epoch, start_epochs, train_ratio, batch_size, learning_rate, cyclical_augmentations, num_augmentations, random_block_sampling_pixel, load_model = load_model)
 
 if __name__ == '__main__':
     print("Training...")
