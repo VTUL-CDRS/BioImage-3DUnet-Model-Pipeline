@@ -46,54 +46,35 @@ def generate_augmented_data(train_images, mask_images, num_augmentations):
 
 
 def plot_loss_and_iou(history, currenttime):
+
     loss = history['loss']
+    val_loss = history['val_loss']
     epochs = range(1, len(loss) + 1)
-    plt.plot(epochs, loss, 'y', label='Training loss')
-    plt.title('Training loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.figure(figsize=(12, 8))
+    plt.subplot(2, 2, 1)
+    plt.plot(epochs, loss, 'b', label='Training loss')
+    plt.plot(epochs, val_loss, 'r', label='Validation loss')
+    plt.title('Training and Validation Loss')
     plt.legend()
-    plt.savefig(currenttime+'-loss.png')
 
     iou_score = history['iou_score']
-    epochs = range(1, len(iou_score) + 1)
-    plt.figure()
-    plt.plot(epochs, iou_score, 'y', label='Training IOU')
-    plt.title('Training IOU')
-    plt.xlabel('Epochs')
-    plt.ylabel('IOU')
-    plt.legend()
-    plt.savefig(currenttime+'-iou.png')
-
     val_iou_score = history['val_iou_score']
-    epochs = range(1, len(val_iou_score) + 1)
-    plt.figure()
-    plt.plot(epochs, val_iou_score, 'y', label='Validation IOU')
-    plt.title('Validation IOU')
-    plt.xlabel('Epochs')
-    plt.ylabel('IOU')
+    plt.subplot(2, 2, 2)
+    plt.plot(epochs, iou_score, 'b', label='Training IOU Score')
+    plt.plot(epochs, val_iou_score, 'r', label='Validation IOU Score')
+    plt.title('Training and Validation IOU Score')
     plt.legend()
-    plt.savefig(currenttime+'-val_iou.png')
 
     f1_score = history['f1-score']
-    epochs = range(1, len(f1_score) + 1)
-    plt.figure()
-    plt.plot(epochs, f1_score, 'y', label='Training f1-score')
-    plt.title('Training f1-score')
-    plt.xlabel('Epochs')
-    plt.ylabel('f1-score')
-    plt.legend()
-    plt.savefig(currenttime+'-f1-score.png')
-
     val_f1_score = history['val_f1-score']
-    epochs = range(1, len(val_f1_score) + 1)
-    plt.figure()
-    plt.plot(epochs, val_f1_score, 'y', label='Validation f1-score')
-    plt.title('Validation f1-score')
-    plt.xlabel('Epochs')
-    plt.ylabel('f1-score')
+    plt.subplot(2, 2, 3)
+    plt.plot(epochs, f1_score, 'b', label='Training F1 Score')
+    plt.plot(epochs, val_f1_score, 'r', label='Validation F1 Score')
+    plt.title('Training and Validation F1 Score')
     plt.legend()
-    plt.savefig(currenttime+'-Validation-f1-score.png')
+
+    plt.tight_layout()
+    plt.savefig('train_with_cyclical_augmentations_random_sample.png')
 
 def atoi(text):
     return int(text) if text.isdigit() else text
@@ -112,6 +93,7 @@ def read_input_images(inputfolder):
     return images
 
 def img_pathify(img, patch_size):
+    print("image_size: ",img.shape)
     patches = patchify(img, (patch_size, patch_size,
                        patch_size), step=patch_size)
     result = np.reshape(
@@ -196,8 +178,8 @@ def split_data_along_longest_axis(data, train_ratio=0.8, padding_value=0):
 
     split_idx = int(data.shape[longest_dim] * train_ratio)
     
-    while split_idx % 64 != 0:
-        split_idx += 1
+    while (data.shape[longest_dim] - split_idx) % 64 != 0:
+        split_idx -= 1
 
     if longest_dim == 0:
         train_data = data[:split_idx, :, :]
