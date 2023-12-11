@@ -35,33 +35,12 @@ def combine(input_path, file_name, number, clear_size):
 
     print("start_conbine")
 
-    
-    # metadata_tags = tif.TiffFile(input_files[0]).pages[0].tags
-    # metadata_dict = {}
-    # for tag in metadata_tags:
-    #     metadata_dict[tag.name] = tag.value
-
-    # first_tif = io.imread(input_files[0])
-
-    # tif.imwrite(output_file, np.zeros(shape, dtype=dtype), bigtiff=True)
-
-    # for input_file in input_files:
-    #     tif_data = tif.imread(input_file)
-    #     tif.imwrite(output_file, tif_data, append=True)
-
     first_tif = io.imread(input_files[0])
     for i in range(1, number+1):
         img = io.imread(input_files[i])
         first_tif = np.concatenate((first_tif, img))
     io.imsave(output_file, first_tif)
 
-
-
-    # merged_tif = tif.imread(output_file)
-    # merged_metadata_tags = tif.TiffFile(output_file).pages[0].tags
-    # merged_metadata_dict = {}
-    # for tag in merged_metadata_tags:
-    #     merged_metadata_dict[tag.name] = tag.value
 
 
 def clear_function(input_path,file_name,number,clear_size):

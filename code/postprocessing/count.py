@@ -5,12 +5,6 @@ import tifffile as tif
 
 
 def count_pore(input_path, file_name):
-    # Use memmap to handle large data
-    
-    # with tif.TiffFile(input_path+file_name+".tif") as f:
-    #     print(f.pages[0].tags)
-    #     print(len(f.pages))
-    #     print(input_path+file_name+".tif")
 
     pores = tif.imread(input_path+file_name+".tif")
 
