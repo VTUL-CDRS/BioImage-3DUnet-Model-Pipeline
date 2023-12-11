@@ -17,7 +17,7 @@ The `training_config.txt` file contains all the training parameters and paths re
 - `load_model`: Path to a pre-trained model (if transfer learning is desired).
 - `start_epochs`: The starting epoch for training.
 - `epochs`: Total number of training epochs.
-- `steps_per_epoch`: Number of steps per training epoch.
+- `steps_per_epoch`: Number of steps per training epoch (number of samples being randomly selected).
 
 Ensure that you have provided accurate paths and parameters in the `training_config.txt` file before initiating the training process.
 
