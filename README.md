@@ -1,22 +1,18 @@
-# BioImage-3DUnet-Model-Pipeline
-a data curation pipeline for very large biomedical images, including AI-assisted human-in-the-loop segmentation of nanoscale images using 3DUnet deep learning. 
+# BioImage 3DUnet Model Pipeline
 
-## Training
-* [train.py](train.py): train a 3DUnet model. See `python train.py -h`
+BioImage 3DUnet Model Pipeline is a data curation pipeline designed for processing very large biomedical images. It includes AI-assisted human-in-the-loop segmentation of nanoscale images using 3DUnet deep learning.
 
-```
-Backbones: ['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152', 'seresnet18',
- 'seresnet34', 'seresnet50', 'seresnet101', 'seresnet152', 'seresnext50', 'seresnext101',
- 'senet154', 'resnext50', 'resnext101', 'vgg16', 'vgg19', 'densenet121', 'densenet169',
- 'densenet201', 'inceptionresnetv2', 'inceptionv3', 'mobilenet', 'mobilenetv2', 'efficientnetb0',
- 'efficientnetb1', 'efficientnetb2', 'efficientnetb3', 'efficientnetb4', 'efficientnetb5',
- 'efficientnetb6', 'efficientnetb7']
-```
+## Installation
 
-* [predict.py](predict.py): predict a 3D semantic segmentation using built 3D U-Net model. See `python predict.py -h`. The Backbone choices should be the same as `train.py`.
+To set up the required Python packages for this pipeline, please follow these steps:
+
+1. Navigate to the project's root directory in your command-line terminal.
+
+2. Ensure you have Python and pip installed on your system, and make sure you have an NVIDIA GPU with CUDA support. You will need to install the appropriate version of CUDA and cuDNN for your GPU.
+
+3. Run the following command to install all the necessary packages listed in the `requirements.txt` file:
+
+   ```bash
+   pip install -r requirements.txt
 
 
-## Utilities
-* [imagecut.py](utils/imagecut.py): cut large images into small image by given x,y,z coordinates and width, height, depth. See `python imagecut.py -h`
-* [imagecombine.py](utils/imagecombine.py): combine small images into one large image. See `python imagecombine.py -h`
-* [objectcount.py](utils/objectcount.py): count the number of objects in a given image. See `python objectcount.py -h`

@@ -22,7 +22,7 @@ def convert(img, target_type_min, target_type_max, target_type):
     return new_img
 
 
-def combine_images(img_folder, term, outputfile):
+def combine(img_folder, term, outputfile):
     imgs = []
     for dir_path in glob.glob(img_folder):
         for img_path in sorted(glob.glob(os.path.join(dir_path, term)), key=os.path.getmtime):
@@ -32,11 +32,12 @@ def combine_images(img_folder, term, outputfile):
     for i in range(1, len(imgs), 1):
         allimgs = np.vstack((allimgs, io.imread(imgs[i])))
 
-    print(allimgs.shape)
+    print (allimgs.shape)
     imwrite(outputfile, allimgs)
 
 
-def parse_arguments(arguments):
+def predict(arguments):
+
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -56,15 +57,17 @@ def parse_arguments(arguments):
         help="Output filename",
         type=str)
 
-    return parser.parse_args(arguments)
+    args = parser.parse_args(arguments)
 
-
-def predict(modelfile, inputfile, outputfile, BACKBONE='vgg16'):
+    modelfile = args.modelfile
+    inputfile = args.inputfile
+    outputfile = args.outputfile
 
     model = load_model(modelfile, compile=False)
     inputimage = io.imread(inputfile)
 
-    patches = patchify(inputimage, (64, 64, 64), step=64) 
+    patches = patchify(inputimage, (64, 64, 64), step=64)
+    BACKBONE = 'vgg16'  # Try vgg16, efficientnetb7, inceptionv3, resnet50
     preprocess_input = sm.get_preprocessing(BACKBONE)
 
     predicted_patches = []
@@ -95,17 +98,10 @@ def predict(modelfile, inputfile, outputfile, BACKBONE='vgg16'):
         imwrite(outputfile + str(i) + '.tif', imgu8)
         predicted_patches = []
 
-    combine_images(os.path.split(outputfile)[0]+"/", '*.tif', outputfile + '.tif')
+    combine(os.path.split(outputfile)[0]+"/", '*.tif', outputfile + '.tif')
 
 
 if __name__ == '__main__':
     print("Predicting...")
-    args = parse_arguments(sys.argv[1:])
-
-    modelfile = args.modelfile
-    inputfile = args.inputfile
-    outputfile = args.outputfile
-    BACKBONE = 'vgg16'
-    predict(modelfile, inputfile, outputfile, BACKBONE)
-
+    predict(sys.argv[1:])
     print("Done.")
