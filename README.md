@@ -15,3 +15,4 @@ To set up the required Python packages for this pipeline, please follow these st
    ```bash
    pip install -r requirements.txt
 
+
