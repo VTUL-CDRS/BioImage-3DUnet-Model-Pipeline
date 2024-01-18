@@ -16,3 +16,41 @@ To set up the required Python packages for this pipeline, please follow these st
    pip install -r requirements.txt
 
 
+## Converting N5 to Scalar N5 with Paintera Conversion Helper
+
+This section describes how to use Paintera Conversion Helper to convert an N5 dataset into a scalar N5 dataset. It's recommended to set up a dedicated Conda environment for Paintera. This ensures that the dependencies required for the conversion do not conflict with other packages in your system.
+
+### Step-by-Step Guide
+
+1. **Create a New Conda Environment**: Start by creating a new environment specifically for Paintera. Replace `paintera-env` with your preferred name for the environment.
+   ```bash
+   conda create -n paintera-env
+   ```
+
+2. **Activate the Paintera Environment**: Before running any commands, make sure the Paintera environment is activated:
+   ```bash
+   conda activate paintera-env
+   ```
+
+3. **Install Paintera Conversion Helper**: Within this environment, install the Paintera Conversion Helper.
+   ```bash
+   conda install -c conda-forge paintera-conversion-helper
+   ```
+
+4. **Install `openjdk` and `maven`**: These are required dependencies. Install them from `conda-forge`:
+   ```bash
+   conda install -c conda-forge maven openjdk
+   ```
+
+5. **Run the Conversion Command**: Use the following command to convert your N5 dataset to a scalar N5 format:
+   ```bash
+   paintera-convert ts -i <input-path> -o <output-path> -I <label-path>
+   ```
+   Replace `<input-path>`, `<output-path>`, and `<label-path>` with your specific file paths and dataset name.
+
+   Example:
+   ```bash
+   paintera-convert ts -i Cell1_2_Crop1_Back4.n5 -o Cell1_2_Crop1_Back4_scalar.n5 -I Labels/NuclearPore
+   ```
+
+For more information and advanced usage, refer to the [Paintera Conversion Helper documentation](https://github.com/saalfeldlab/paintera-conversion-helper).
