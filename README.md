@@ -10,7 +10,7 @@ BioImage 3DUnet Model Pipeline is a data curation pipeline designed for processi
 - **/preprocessing**: Holds programs for further processing of prediction results. This includes cleaning up multiple small prediction results and counting them individually.
 - **/test**: Contains all tests performed in the paper.
 
-Additional Information
+## Additional Information
 For more details regarding the code and tests, refer to the paper "Deep Learning Approach for Cell Nuclear Pore Detection and Quantification over High Resolution 3D Data", available at this link: https://hdl.handle.net/10919/117266
 
 ## Installation
