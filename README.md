@@ -15,6 +15,16 @@ To set up the required Python packages for this pipeline, please follow these st
    ```bash
    pip install -r requirements.txt
 
+## Contents
+
+- **/postprocessing**: Contains tools for preprocessing raw `.tif` files into the desired shape for training and prediction.
+- **/training**: Includes the main training programs. The files here are used to train models using specified raw files and their labels.
+- **/prediction**: Contains programs for making predictions using specified models on raw files. Predictions are generated as a series of small results, which are later combined.
+- **/preprocessing**: Holds programs for further processing of prediction results. This includes cleaning up multiple small prediction results and counting them individually.
+- **/test**: Contains all tests performed in the paper.
+
+Additional Information
+For more details regarding the code and tests, refer to the paper "Deep Learning Approach for Cell Nuclear Pore Detection and Quantification over High Resolution 3D Data", available at this link: https://hdl.handle.net/10919/117266
 
 ## Converting N5 to Scalar N5 with Paintera Conversion Helper
 
