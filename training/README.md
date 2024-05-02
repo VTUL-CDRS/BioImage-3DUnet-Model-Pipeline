@@ -35,6 +35,45 @@ The `train_with_cyclical_augmentations_random_sample_nonfix.py` script is used t
 - `random_block_sampling_pixel`: Number of pixels to sample randomly.
 - `weights`: A list of weights for each input label sample (None if not weighted).
 
+- ## Data and Label
+
+- If the labeled image does not have the same name as the raw TIF image, please name them with a similar number to help the program point to the correct image and label, as mentioned in the appendix of the paper.
+
+|   |-- Ground\ Truth\ -\ Method\ 1
+|   |   |-- 00_RhebStandardCrop2_1_Pore.tif
+|   |   |-- 01_RhebStandardCrop2_2_Pore.tif
+|   |   |-- 02_RhebStandardCrop2_3_Pore.tif
+|   |   |-- 03_RhebStandardCrop2_4_Pore.tif
+|   |   |-- 04_RhebStandardCrop2_5_Pore.tif
+|   |   |-- 05_RhebStandardCrop2_6_Pore.tif
+|   |   |-- 06_RhebStandardCrop2_7_Pore.tif
+|   |   |-- 07_RhebStandardCrop2_8_Pore.tif
+|   |   |-- 08_RhebStandardCrop3_1_Pores.tif
+|   |   |-- 09_RhebStandardCrop3_2_Pores.tif
+|   |   |-- 10_RhebStandardCrop3_3_Pores.tif
+|   |   |-- 11_RhebStandardCrop3_4_Pores.tif
+|   |   |-- 12_RhebStandardCrop4_1_Pores.tif
+|   |   |-- 13_RhebStandardCrop4_2_Pores.tif
+|   |   |-- 14_RhebStandardCrop4_3_Pores.tif
+|   |   `-- 15_RhebStandardCrop4_4_Pores.tif
+|   `-- raw
+|       |-- 00_RhebStandardCrop2_1.tif
+|       |-- 01_RhebStandardCrop2_2.tif
+|       |-- 02_RhebStandardCrop2_3.tif
+|       |-- 03_RhebStandardCrop2_4.tif
+|       |-- 04_RhebStandardCrop2_5.tif
+|       |-- 05_RhebStandardCrop2_6.tif
+|       |-- 06_RhebStandardCrop2_7.tif
+|       |-- 07_RhebStandardCrop2_8.tif
+|       |-- 08_RhebStandardCrop3_1.tif
+|       |-- 09_RhebStandardCrop3_2.tif
+|       |-- 10_RhebStandardCrop3_3.tif
+|       |-- 11_RhebStandardCrop3_4.tif
+|       |-- 12_RhebStandardCrop4_1.tif
+|       |-- 13_RhebStandardCrop4_2.tif
+|       |-- 14_RhebStandardCrop4_3.tif
+|       `-- 15_RhebStandardCrop4_4.tif
+
 You can modify these parameters to customize the training process according to your specific requirements.
 
 To execute the script, open a terminal or command prompt and run the following command:
