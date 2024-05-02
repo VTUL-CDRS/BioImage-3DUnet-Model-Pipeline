@@ -14,7 +14,7 @@ The `training_config.txt` file contains all the training parameters and paths re
 - `modelfile`: Path to the model file where the trained model will be saved.
 - `inputfolder`: Path to the input data folder.
 - `maskfolder`: Path to the mask/label data folder.
-- `load_model`: Path to a pre-trained model (or "None" if desired).
+- `load_model`: Path to a pre-trained model (or "None" if not desired).
 - `start_epochs`: The starting epoch for training.
 - `epochs`: Total number of training epochs.
 - `steps_per_epoch`: Number of steps per training epoch (number of samples being randomly selected).
