@@ -35,6 +35,12 @@ The `train_with_cyclical_augmentations_random_sample_nonfix.py` script is used t
 - `random_block_sampling_pixel`: Number of pixels to sample randomly.
 - `weights`: A list of weights for each input label sample (None if not weighted).
 
+You can modify these parameters to customize the training process according to your specific requirements.
+
+To execute the script, open a terminal or command prompt and run the following command:
+    ```bash
+    python train_with_cyclical_augmentations_random_sample_nonfix.py
+
 - ## Data and Label
 
 - If the labeled image does not have the same name as the raw TIF image, please name them with a similar number to help the program point to the correct image and label, as mentioned in the appendix of the paper.
@@ -56,8 +62,7 @@ The `train_with_cyclical_augmentations_random_sample_nonfix.py` script is used t
 | | |-- 12_RhebStandardCrop4_1_Pores.tif
 | | |-- 13_RhebStandardCrop4_2_Pores.tif
 | | |-- 14_RhebStandardCrop4_3_Pores.tif
-| | -- 15_RhebStandardCrop4_4_Pores.tif 
-| -- raw
+| | -- 15_RhebStandardCrop4_4_Pores.tif | -- raw
 | |-- 00_RhebStandardCrop2_1.tif
 | |-- 01_RhebStandardCrop2_2.tif
 | |-- 02_RhebStandardCrop2_3.tif
@@ -74,9 +79,3 @@ The `train_with_cyclical_augmentations_random_sample_nonfix.py` script is used t
 | |-- 13_RhebStandardCrop4_2.tif
 | |-- 14_RhebStandardCrop4_3.tif
 | `-- 15_RhebStandardCrop4_4.tif
-
-You can modify these parameters to customize the training process according to your specific requirements.
-
-To execute the script, open a terminal or command prompt and run the following command:
-    ```bash
-    python train_with_cyclical_augmentations_random_sample_nonfix.py
