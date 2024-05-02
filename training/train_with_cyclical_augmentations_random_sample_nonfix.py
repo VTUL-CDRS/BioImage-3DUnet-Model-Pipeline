@@ -351,7 +351,7 @@ def main():
     learning_rate = 0.0001
     cyclical_augmentations = 25
     train_ratio = 0.8
-    num_augmentations = 0
+    num_augmentations = 5
     random_block_sampling_pixel = 2000
     weights = None
     # weights = [1,1,1,1,1,4]
