@@ -237,7 +237,8 @@ def train(modelfile, inputfolder, maskfolder, epochs, steps_per_epoch, start_epo
         assert i.shape == j.shape
         index = index + 1
 
-    assert len(weights) == index
+    if weights is not None:
+        assert len(weights) == index
 
     dice_loss = sm.losses.DiceLoss(
         class_weights=np.array([0.25, 0.25, 0.25, 0.25]))
@@ -350,9 +351,10 @@ def main():
     learning_rate = 0.0001
     cyclical_augmentations = 25
     train_ratio = 0.8
-    num_augmentations = 5
+    num_augmentations = 0
     random_block_sampling_pixel = 2000
-    weights = [1,1,1,1,1,4]
+    weights = None
+    # weights = [1,1,1,1,1,4]
 
     train(modelfile, inputfolder, maskfolder, epochs, steps_per_epoch, start_epochs, train_ratio, batch_size, learning_rate, cyclical_augmentations, num_augmentations, random_block_sampling_pixel, weights = weights, load_model = load_model)
 
