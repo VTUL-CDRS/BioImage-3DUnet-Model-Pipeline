@@ -100,15 +100,40 @@ def measure_median_diameter(image, center, normal, length):
     # return np.median(diameters), new_iamge
     return np.median(diameters)
 
+def clear_image(image, clear_size, threshold = None):
+
+    pores = None
+    if threshold is not None:
+        pores = np.where(image > threshold, image, 0)
+
+    pores = morphology.remove_small_objects(pores, min_size = clear_size)
+
+    return pores
+
 def process_batch(batch):
+    batch = clear_image(batch, 2000, threshold = 127)
     labeled_stack = measure.label(batch, connectivity=1)
     regions = measure.regionprops(labeled_stack)
     centroids = [region.centroid for region in regions]
     return centroids
 
-def cal_diameters(label_name,raw_name,csv_file_path,current_path):
+def cal_diameters(label_name,raw_name,csv_file_path,current_path,mask_path = None):
 
     inputimage = tif.imread(label_name)
+
+    if mask_path is not None:
+        mask = tif.imread(mask_path)
+        inputimage = np.where(mask == 1, inputimage, 0)
+        tif.imwrite(current_path + '/filtered_image.tif', inputimage)
+    
+    # non_zero_values = inputimage.ravel()[inputimage.ravel() != 0]
+    # plt.hist(non_zero_values, bins=250)
+    # plt.title('Histogram of Image Excluding Zeros')
+    # plt.xlabel('Pixel Value')
+    # plt.ylabel('Frequency')
+    # plt.savefig(current_path + "/Histogram_of_Image_Excluding_Zeros.png")
+    # plt.show()
+    # return
 
     map_name = "centroids_map.npy"
 
@@ -166,7 +191,6 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
                 
     print("Number of centroids:", len(centroids_map))
 
-
     centroids = np.array(centroids_map)
 
     dbscan = DBSCAN(eps=30, min_samples=20)
@@ -178,30 +202,30 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
 
     print(f"Estimated number of clusters: {n_clusters}")
 
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    # ax.scatter(centroids[labels == -1, 0], centroids[labels == -1, 1], centroids[labels == -1, 2], c='k', label='Noise')
+    ax.scatter(centroids[labels == -1, 0], centroids[labels == -1, 1], centroids[labels == -1, 2], c='k', label='Noise')
 
     
-    # for label in unique_labels:
-    #     ax.scatter(centroids[labels == label, 0], centroids[labels == label, 1], centroids[labels == label, 2], label=f'Cluster {label}')
+    for label in unique_labels:
+        ax.scatter(centroids[labels == label, 0], centroids[labels == label, 1], centroids[labels == label, 2], label=f'Cluster {label}')
 
-    # ax.legend()
-    # ax.set_title('DBSCAN Clustering')
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    # plt.show()
+    ax.legend()
+    ax.set_title('DBSCAN Clustering')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
 
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    # ax.scatter(centroids[labels == -1, 0], centroids[labels == -1, 1], centroids[labels == -1, 2], c='k', marker='x', label='Noise')
+    ax.scatter(centroids[labels == -1, 0], centroids[labels == -1, 1], centroids[labels == -1, 2], c='k', marker='x', label='Noise')
 
     if unique_labels:
         largest_cluster_label = max(unique_labels, key=list(labels).count)
-        # ax.scatter(centroids[labels == largest_cluster_label, 0], centroids[labels == largest_cluster_label, 1], centroids[labels == largest_cluster_label, 2], s=10, edgecolors='yellow', label=f'Largest Cluster {largest_cluster_label}')
+        ax.scatter(centroids[labels == largest_cluster_label, 0], centroids[labels == largest_cluster_label, 1], centroids[labels == largest_cluster_label, 2], s=10, edgecolors='yellow', label=f'Largest Cluster {largest_cluster_label}')
         largest_cluster_x = centroids[labels == largest_cluster_label, 0].tolist()
         largest_cluster_y = centroids[labels == largest_cluster_label, 1].tolist()
         largest_cluster_z = centroids[labels == largest_cluster_label, 2].tolist()
@@ -211,12 +235,12 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
         # print("Centroids of the largest cluster:", largest_cluster_centroids_list[:5])
 
 
-    # ax.legend()
-    # ax.set_title('DBSCAN: Largest Cluster and Noise')
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    # plt.show()
+    ax.legend()
+    ax.set_title('DBSCAN: Largest Cluster and Noise')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
 
 
     def find_nearest_triangles(centroids, tri_centers, k):
@@ -260,12 +284,12 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
     triangles = alpha_shape.faces
 
 
-    # print(len(triangles))
+    print(len(triangles))
     # fig = plt.figure()
     # ax = plt.axes(projection='3d')
     # ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces)
     # plt.show()
-    normals = []
+    # normals = []
 
     raw_img = tif.imread(raw_name)
     triangles = alpha_shape.faces
@@ -284,8 +308,8 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
 
     areas = np.array([triangle_area(vertices, face) for face in triangles])
 
-    print("triangle number: ", len(triangles))
-    print(areas[:100])
+    # print("triangle number: ", len(triangles))
+    # print(areas[:100])
 
     # plt.hist(areas, bins=10000, color='#0504aa', alpha=0.7, rwidth=0.85)
     # plt.title('Triangle Areas Histogram')
@@ -366,7 +390,7 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
 
     print(statistics)
 
-    plt.hist(median_diameters_data, bins=5, color='skyblue', edgecolor='black')
+    plt.hist(median_diameters_data, bins=10000, color='skyblue', edgecolor='black')
     plt.title('Distribution of Median Diameters')
     plt.xlabel('Median Diameter')
     plt.ylabel('Frequency')
@@ -379,12 +403,15 @@ def cal_diameters(label_name,raw_name,csv_file_path,current_path):
     # tif.imsave(modified_output_file, modified_raw_image)
 
 
-csv_file_path = r"/mnt/research-data/test_prediction/Standardized Crops 2024/method_1_RhebNeuron2_old/RhebNeuron2_median_diameters.csv"
+csv_file_path = r"/mnt/research-data/test_prediction/test/RhebNeuron2_median_diameters.csv"
 
-label_name = "/mnt/research-data/test_prediction/Standardized Crops 2024/method_1_RhebNeuron2_old/clear_10000_RhebNeuron2_conbine_10000.tif"
+label_name = "/mnt/research-data/test_prediction/test/Cell1_2_Crop1_.tif"
 
-raw_name = "/mnt/research-data/raw_data/RhebNeuron/RhebNeuron2_Raw.tif"
+raw_name = "/mnt/research-data/data/yale/Cell1_2_Crop1-1.tif"
 
-current_path = "/mnt/research-data/test_prediction/Standardized Crops 2024/method_1_RhebNeuron2_old"
+current_path = "/mnt/research-data/test_prediction/test"
 
-cal_diameters(label_name,raw_name,csv_file_path,current_path)
+# mask_path = "/mnt/research-data/raw_data/mask/RhebNeuron2_mask_scalar..tif"
+mask_path = None
+
+cal_diameters(label_name, raw_name, csv_file_path, current_path , mask_path)
