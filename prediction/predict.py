@@ -5,6 +5,7 @@ import os
 import segmentation_models_3D as sm
 import sys
 import tensorflow as tf
+from pathlib import Path
 
 from keras.models import load_model
 from patchify import patchify, unpatchify
@@ -26,14 +27,17 @@ def combine(img_folder, term, outputfile):
     imgs = []
     for dir_path in glob.glob(img_folder):
         for img_path in sorted(glob.glob(os.path.join(dir_path, term)), key=os.path.getmtime):
+            if 'clear' in img_path:
+                continue
             imgs.append(img_path)
     
+    print(imgs)
     allimgs = io.imread(imgs[0])
     for i in range(1, len(imgs), 1):
         allimgs = np.vstack((allimgs, io.imread(imgs[i])))
 
-    print (allimgs.shape)
-    imwrite(outputfile, allimgs)
+    print(allimgs.shape)
+    imwrite(outputfile, allimgs, compression='zlib')
 
 
 def predict(arguments):
@@ -71,6 +75,7 @@ def predict(arguments):
     preprocess_input = sm.get_preprocessing(BACKBONE)
 
     predicted_patches = []
+    print(patches.shape)
     for i in range(patches.shape[0]):
         for j in range(patches.shape[1]):
             for k in range(patches.shape[2]):
@@ -95,7 +100,7 @@ def predict(arguments):
             predicted_patches_reshaped, (64, inputimage.shape[1], inputimage.shape[2]))
 
         imgu8 = convert(reconstructed_image, 0, 255, np.uint8)
-        imwrite(outputfile + str(i) + '.tif', imgu8)
+        imwrite(Path(outputfile) / (str(i) + '.tif'), imgu8, compression='zlib')
         predicted_patches = []
 
     combine(os.path.split(outputfile)[0]+"/", '*.tif', outputfile + '.tif')
