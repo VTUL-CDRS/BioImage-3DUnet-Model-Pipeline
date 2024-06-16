@@ -47,10 +47,10 @@ def combine(input_path, file_name, number, clear_size):
         first_tif = np.concatenate((first_tif, img))
     tif.imwrite(output_file, first_tif, compression='zlib')
 
-def clear_function(input_path: str,number: int,clear_size:int,file_name: str=""):
+def clear_function(input_path: str,number: int,clear_size:int,file_name: str="", ncores: int = 16):
     print("start clear:" + file_name)
     clear_partial = partial(clear_image, input_path=input_path, clear_size=clear_size, file_name=file_name)
-    with WorkerPool(n_jobs=4) as pool:
+    with WorkerPool(n_jobs=ncores) as pool:
         pool.map(clear_partial, range(number), progress_bar=True)
     print("finish clear:" + file_name)
     combine(input_path, file_name, number, clear_size)
