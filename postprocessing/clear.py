@@ -16,6 +16,7 @@ def clear_image(i, input_path, file_name, clear_size, threshold):
     pores = tif.imread(image_name)
 
     pores[pores < threshold] = 0
+    pores[pores >= threshold] = 255
     
     out, num = morphology.label(pores, return_num=True, connectivity=2)
     ids, cnts = np.unique(out, return_counts=True)
