@@ -33,13 +33,10 @@ def clear_image(i, input_path, file_name, clear_size, threshold):
 
 
 def combine(input_path, file_name, number, clear_size, threshold):
-
-    id_name = input_path + "clear_" + str(clear_size) + "_" + file_name + '_' + str(threshold) + '_'
-
-    input_files = [id_name + f"{i}.tif" for i in range(0, number)]
+    input_files = [f'{input_path}clear_{clear_size}_{file_name}{i}_{threshold}.tif' for i in range(0, number)]
 
 
-    output_file = id_name + "combine_" + str(clear_size) +".tif"
+    output_file = f'{input_path}combine_clear_{clear_size}_{file_name}{threshold}.tif'
 
     print("start_combine")
 
