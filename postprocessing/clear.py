@@ -40,12 +40,13 @@ def combine(input_path, file_name, number, clear_size, threshold):
     output_file = f'{input_path}combine_clear_{clear_size}_{file_name}{threshold}.tif'
 
     print("start_combine")
-
-    first_tif = io.imread(input_files[0])
+    
+    imgs = []
     for i in range(number):
         img = io.imread(input_files[i])
-        first_tif = np.concatenate((first_tif, img))
-    tif.imwrite(output_file, first_tif, compression='zlib')
+        imgs.append(img)
+    img = np.concatenate(imgs)
+    tif.imwrite(output_file, img, compression='zlib')
 
 def clear_function(input_path: str,number: int,clear_size:int, threshold:int, file_name: str="", ncores: int = 16):
     print("start clear:" + file_name)
