@@ -5,12 +5,18 @@ import tyro
 from einops import rearrange
 from skimage import measure
 from sklearn.neighbors import KDTree
+from pathlib import Path
 
 
-def main(file: str, head: str):
+def main(file: str, mask_file: str, head: str, outdir: str):
     img = tif.imread(file)
+    mask = tif.imread(mask_file)
+    mask = mask[::2, ::2, ::2]
+    
+    img = img * mask
     img = rearrange(img, "(n x) y z -> n x y z", n=8)
     points = []
+    # TODO: multiprocess
     for i in range(8):
         out = measure.label(img[i])
         props = measure.regionprops(out)
@@ -32,8 +38,8 @@ def main(file: str, head: str):
 
     plt.figure()
     plt.hist(nearest_neighbor_distances, bins=200)
-    plt.title(f"Histogram {head}")
-    plt.savefig(f"hist_{head}.png")
+    plt.title(f"Histogram {head} total_num: {len(pcds)}")
+    plt.savefig(Path(outdir) / f"hist_{head}.png")
 
 
 if __name__ == "__main__":

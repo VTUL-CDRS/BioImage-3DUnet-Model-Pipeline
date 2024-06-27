@@ -23,10 +23,12 @@ def worker(i, img, threshold):
 
 
 def main(
-    img_file: str, mask_file: str, threshold: int, n_jobs: int = 10
+    img_file: str, mask_file: str, threshold: int, outdir: str = "./", n_jobs: int = 10
 ):
     img = tif.imread(img_file)
     mask = tif.imread(mask_file)
+    
+    print('Data loaded')
 
     img = img * mask
     del mask
@@ -45,7 +47,7 @@ def main(
         plt.figure()
         plt.hist(cnts, bins=100)
         plt.title(f"Numbers of Pixels threshold_{threshold}")
-        plt.savefig(f"hist_{threshold}.png")
+        plt.savefig(Path(outdir) / f"hist_{threshold}.png")
 
 
 if __name__ == "__main__":
