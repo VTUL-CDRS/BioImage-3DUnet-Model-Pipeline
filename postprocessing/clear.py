@@ -1,62 +1,61 @@
-from skimage import morphology, measure, segmentation, feature
-from scipy import ndimage as ndi
-import numpy as np
-import tifffile as tif
-from skimage import io
-import tyro
-from mpire import WorkerPool
 from functools import partial
+from pathlib import Path
 
-def clear_image(i, input_path, file_name, clear_size, threshold):
+import numpy as np
+import numpy.typing as npt
+import tifffile as tif
+import tyro
+from einops import rearrange
+from mpire import WorkerPool
+from skimage import morphology
 
-    image_name = input_path+file_name + str(i) + ".tif"
 
-    print("process " + image_name)
+def worker(ind: int, pred: npt.NDArray[np.uint8], threshold: int, clear_size: int):
+    pred = pred[ind, ...]
+    pred[pred < threshold] = 0
+    pred[pred >= threshold] = 255
 
-    pores = tif.imread(image_name)
-
-    pores[pores < threshold] = 0
-    pores[pores >= threshold] = 255
-    
-    out, num = morphology.label(pores, return_num=True, connectivity=2)
-    ids, cnts = np.unique(out, return_counts=True)
+    labeled: npt.NDArray[int] = morphology.label(pred, connectivity=2)
+    ids, cnts = np.unique(labeled, return_counts=True)
 
     mask = cnts < clear_size
-    to_replace = np.isin(out, ids[mask])
-    out[to_replace] = 0
-    out[out > 0] = 255
-    out = out.astype(np.uint8)
+    to_replace = np.isin(labeled, ids[mask])
+    labeled[to_replace] = 0
+    labeled[labeled > 0] = 255
+    labeled = labeled.astype(np.uint8)
 
-    # save to tif
-    output_file = f'{input_path}clear_{clear_size}_{file_name}{i}_{threshold}.tif'
-    tif.imwrite(output_file, out, compression='zlib')
-    print("finish " + output_file)
+    return labeled
 
 
-def combine(input_path, file_name, number, clear_size, threshold):
-    input_files = [f'{input_path}clear_{clear_size}_{file_name}{i}_{threshold}.tif' for i in range(0, number)]
+def main(
+    pred_file: str,
+    mask_file: str,
+    outdir: str,
+    threshold: int,
+    clear_size: int,
+    n_jobs: int = 10,
+):
+    pred = tif.imread(pred_file)
+    mask = tif.imread(mask_file)
+
+    print("Data loaded")
+
+    pred = mask * pred
+    del mask
+
+    # Downsample for faster process
+    pred = pred[::2, ::2, ::2]
+    tif.imwrite(Path(outdir) / 'combine_downsampled.tif', compression='zlib')
+
+    pred = rearrange(pred, "(n x) y z -> n x y z", x=64)
+
+    with WorkerPool(n_jobs=n_jobs) as pool:
+        func = partial(worker, pred=pred, threshold=threshold, clear_size=clear_size)
+        results = pool.map(func, range(pred.shape[0]), progress_bar=True)
+        img = np.concatenate(results)
+        outfile = Path(outdir) / f"combine_cleared_{threshold}_{clear_size}.tif"
+        tif.imwrite(outfile, img, compression="zlib")
 
 
-    output_file = f'{input_path}combine_clear_{clear_size}_{file_name}{threshold}.tif'
-
-    print("start_combine")
-    
-    imgs = []
-    for i in range(number):
-        img = io.imread(input_files[i])
-        imgs.append(img)
-    img = np.concatenate(imgs)
-    tif.imwrite(output_file, img, compression='zlib')
-
-def clear_function(input_path: str,number: int,clear_size:int, threshold:int, file_name: str="", ncores: int = 16):
-    print("start clear:" + file_name)
-    clear_partial = partial(clear_image, input_path=input_path, clear_size=clear_size, file_name=file_name, threshold=threshold)
-    with WorkerPool(n_jobs=ncores) as pool:
-        pool.map(clear_partial, range(number), progress_bar=True)
-    print("finish clear:" + file_name)
-    combine(input_path, file_name, number, clear_size, threshold)
-    print("finish combine:" + file_name)
-
-    
-if __name__ == '__main__':
-    tyro.cli(clear_function)
+if __name__ == "__main__":
+    tyro.cli(main)
