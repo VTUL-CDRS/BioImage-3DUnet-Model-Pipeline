@@ -45,9 +45,11 @@ def main(
 
     # Downsample for faster process
     pred = pred[::2, ::2, ::2]
-    tif.imwrite(Path(outdir) / 'combine_downsampled.tif', compression='zlib')
+    tif.imwrite(Path(outdir) / "combine_downsampled.tif", pred, compression="zlib")
 
-    pred = rearrange(pred, "(n x) y z -> n x y z", x=64)
+    pred = rearrange(
+        pred, "(n x) y z -> n x y z", x=32
+    )  # Because we downsample the image, so it can only be divided by 32
 
     with WorkerPool(n_jobs=n_jobs) as pool:
         func = partial(worker, pred=pred, threshold=threshold, clear_size=clear_size)
