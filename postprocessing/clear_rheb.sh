@@ -15,15 +15,15 @@ conda activate imls
 
 for thr in 127
 do 
-  for cc in 500
+  for cc in 300
   do
     echo $thr $cc
     root_dir=../prediction/rheb1
     python clear.py --pred-file $root_dir/predictions/combine.tif --mask-file ~/yinlin/bio/raw_images/rheb/RhebNeuron1_mask.tif \
-      --outdir $root_dir --threshold $thr --clear-size $cc --n-jobs 32
+      --outdir $root_dir --threshold $thr --clear-size $cc --n-jobs 12
 
     root_dir=../prediction/rheb2 
     python clear.py --pred-file $root_dir/predictions/combine.tif --mask-file ~/yinlin/bio/raw_images/rheb/RhebNeuron2_mask.tif \
-      --outdir $root_dir --threshold $thr --clear-size $cc --n-jobs 32
+      --outdir $root_dir --threshold $thr --clear-size $cc --n-jobs 12
   done
 done
