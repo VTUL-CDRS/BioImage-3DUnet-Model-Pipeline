@@ -14,7 +14,7 @@ def main(input_dir: str):
         for cc in [300, 500]:
             for thr in [30, 60, 127]:
                 file = f'stat_{cc}_{thr}.npz'
-                stats = np.load(Path(input_dir) / 'rheb2' / file)
+                stats = np.load(Path(input_dir) / exp / file)
                 nums.append(stats['nn_distances'].shape[0])
                 labels.append(f'{cc}_{thr}')
 
