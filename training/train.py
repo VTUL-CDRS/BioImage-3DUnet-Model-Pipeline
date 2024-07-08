@@ -17,7 +17,7 @@ def setup_model(model_dir):
 
     checkpoint = L.pytorch.callbacks.ModelCheckpoint(
         dirpath=model_dir,
-        filename="{epoch}-{val_rec_loss:.4f}",
+        filename="{epoch}-{val_dice_loss:.4f}",
         monitor="val_dice_loss",
         every_n_epochs=1000,
         save_top_k=3,
