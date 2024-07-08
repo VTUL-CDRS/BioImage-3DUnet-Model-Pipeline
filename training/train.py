@@ -1,7 +1,7 @@
 import lightning as L
 import torch
 import tyro
-from monai.transforms import Compose, RandFlipd, RandRotated, RandSpatialCropd
+from monai.transforms import Compose, RandCropByPosNegLabeld, RandFlipd, RandRotated
 from torch.utils.data import DataLoader
 
 from dataset.dataset import TifDataset
@@ -19,7 +19,7 @@ def setup_model(model_dir):
         dirpath=model_dir,
         filename="{epoch}-{val_dice_loss:.4f}",
         monitor="val_dice_loss",
-        every_n_epochs=1000,
+        every_n_epochs=200,
         save_top_k=3,
     )
     callbacks = [checkpoint]
@@ -27,7 +27,7 @@ def setup_model(model_dir):
     trainer = L.Trainer(
         accelerator=accelerator,
         devices=devices,
-        max_epochs=50000,
+        max_epochs=10000,
         log_every_n_steps=1,
         strategy="auto",
         callbacks=callbacks,
@@ -37,12 +37,17 @@ def setup_model(model_dir):
     return (model, trainer)
 
 
-def train(data_dir: str, batch_size: int = 4, model_dir: str = "./model"):
+def train(data_dir: str, batch_size: int = 8, model_dir: str = "./model"):
     print("Loading data...")
     transform = Compose(
         [
-            RandSpatialCropd(
-                keys=["image", "label"], roi_size=(64, 64, 64), random_size=False
+            RandCropByPosNegLabeld(
+                keys=["image", "label"],
+                label_key="label",
+                spatial_size=(64, 64, 64),
+                pos=1.0,
+                neg=0.2,
+                num_samples=4,
             ),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=0),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=1),

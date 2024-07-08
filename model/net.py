@@ -40,7 +40,8 @@ class Net(L.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
-        images, labels = batch["image"], batch["label"]
+        print(len(batch), batch_idx)
+        images, labels = batch[batch_idx]["image"], batch[batch_idx]["label"]
         output = self.forward(images)
         l_dice = self.dice_loss(output, labels)
         l_focal = self.focal_loss(output, labels)

@@ -60,17 +60,22 @@ if __name__ == "__main__":
 
     from monai.transforms import (
         Compose,
+        RandCropByPosNegLabeld,
         RandFlipd,
         RandRotated,
-        RandSpatialCropd,
         ToTensord,
     )
 
     transform = Compose(
         [
             ToTensord(keys=["image", "label"], device="cuda"),
-            RandSpatialCropd(
-                keys=["image", "label"], roi_size=(64, 64, 64), random_size=False
+            RandCropByPosNegLabeld(
+                keys=["image", "label"],
+                label_key="label",
+                spatial_size=(64, 64, 64),
+                pos=1.0,
+                neg=0.2,
+                num_samples=4,
             ),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=0),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=1),
@@ -86,8 +91,8 @@ if __name__ == "__main__":
     )
     for i in range(6):
         d = dataset[0]
-        print(d.keys())
-        image, label = d["image"], d["label"]
+        print(d[0].keys())
+        image, label = d[0]["image"], d[0]["label"]
         print(image.shape, label.shape)
         print(torch.min(image), torch.max(image))
         print(torch.min(label), torch.max(label))
