@@ -34,7 +34,7 @@ class Net(L.LightningModule):
         self.iou = MeanIoU(include_background=False)
 
     def forward(self, x):
-        return self._model(x)
+        return torch.nn.functional.sigmoid(self._model(x))
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), 1e-4)
