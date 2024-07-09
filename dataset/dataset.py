@@ -75,7 +75,6 @@ class TifDataset(Dataset):
         imgs = rearrange(imgs, "n x y z -> n x y z")
         labels = rearrange(labels, "n x y z -> n x y z")
 
-
         with Pool(processes=8) as pool:
             func = partial(
                 random_crop_by_label,
@@ -94,15 +93,12 @@ class TifDataset(Dataset):
             self.labels = rearrange(self.labels, "n x y z -> n 1 x y z")
 
         n = self.imgs.shape[0]
-        n_train = int(0.9 * n)
-        
         if val:
-            self.imgs = self.imgs[n_train:, ...]
-            self.labels = self.labels[n_train:, ...]
+            indices = np.random.choice(n, int(0.1 * n))
         else:
-            self.imgs = self.imgs[:n_train, ...]
-            self.labels = self.labels[:n_train, ...]
-            
+            indices = np.random.choice(n, int(0.9 * n))
+        self.imgs = self.imgs[indices, ...]
+        self.labels = self.labels[indices, ...]
 
     def __len__(self):
         return self.imgs.shape[0]
