@@ -5,6 +5,7 @@ from monai.losses import DiceLoss, FocalLoss
 from monai.metrics import MeanIoU
 from monai.networks.layers import Norm
 from monai.networks.nets import FlexibleUNet, UNet
+from torch.optim.lr_scheduler import MultiStepLR
 
 
 class Net(L.LightningModule):
@@ -37,11 +38,11 @@ class Net(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), 1e-4)
-        return optimizer
+        lr_scheduler = MultiStepLR(optimizer, gamma=0.2, milestones=[1000, 3000, 5000])
+        return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 
     def training_step(self, batch, batch_idx):
-        print(len(batch), batch_idx)
-        images, labels = batch[batch_idx]["image"], batch[batch_idx]["label"]
+        images, labels = batch["image"], batch["label"]
         output = self.forward(images)
         l_dice = self.dice_loss(output, labels)
         l_focal = self.focal_loss(output, labels)
@@ -53,19 +54,18 @@ class Net(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         images, labels = batch["image"], batch["label"]
-        roi_size = (64, 64, 64)
-        sw_batch_size = 4
-        outputs = sliding_window_inference(
-            images, roi_size, sw_batch_size, self.forward
-        )
-        self.iou(y_pred=outputs, y=labels)
-        iou = self.iou.aggregate().item()
-        self.iou.reset()
-        dice = self.dice_loss(outputs, labels)
+        pred = self.forward(images)
+        self.iou(y_pred=pred, y=labels)
+        dice = self.dice_loss(pred, labels).detach().item()
+
         log_params = {"on_step": False, "on_epoch": True, "prog_bar": True}
         self.log("val_dice_loss", dice, **log_params)
-        self.log("val_iou", iou, **log_params)
-        return {"val_dice_loss": dice, "val_iou": iou}
+        return {"val_dice_loss": dice}
+
+    def on_validation_epoch_end(self):
+        miou = self.iou.aggregate()
+        self.iou.reset()
+        self.log("val_miou", miou, prog_bar=True)
 
 
 if __name__ == "__main__":

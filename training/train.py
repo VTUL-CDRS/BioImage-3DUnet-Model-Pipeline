@@ -1,7 +1,7 @@
 import lightning as L
 import torch
 import tyro
-from monai.transforms import Compose, RandCropByPosNegLabeld, RandFlipd, RandRotated
+from monai.transforms import Compose, RandAffined, RandFlipd, RandGaussianNoised
 from torch.utils.data import DataLoader
 
 from dataset.dataset import TifDataset
@@ -19,7 +19,7 @@ def setup_model(model_dir):
         dirpath=model_dir,
         filename="{epoch}-{val_dice_loss:.4f}",
         monitor="val_dice_loss",
-        every_n_epochs=200,
+        every_n_epochs=20,
         save_top_k=3,
     )
     callbacks = [checkpoint]
@@ -28,38 +28,46 @@ def setup_model(model_dir):
         accelerator=accelerator,
         devices=devices,
         max_epochs=10000,
-        log_every_n_steps=1,
+        log_every_n_steps=5,
         strategy="auto",
         callbacks=callbacks,
-        check_val_every_n_epoch=10,
+        check_val_every_n_epoch=5,
     )
 
     return (model, trainer)
 
 
-def train(data_dir: str, batch_size: int = 8, model_dir: str = "./model"):
+def train(
+    data_dir: str,
+    batch_size: int = 8,
+    model_dir: str = "./model",
+    num_samples: int = 64,
+):
     print("Loading data...")
     transform = Compose(
         [
-            RandCropByPosNegLabeld(
+            RandAffined(
                 keys=["image", "label"],
-                label_key="label",
-                spatial_size=(64, 64, 64),
-                pos=1.0,
-                neg=0.2,
-                num_samples=4,
+                prob=0.15,
+                rotate_range=(
+                    0.05,
+                    0.05,
+                    0.05,
+                ),  # 3 parameters control the transform on 3 dimensions
+                scale_range=(0.1, 0.1, 0.1),
+                mode=("bilinear", "nearest"),
             ),
+            RandGaussianNoised("image", prob=0.15, std=0.01),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=0),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=1),
             RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=2),
-            RandRotated(
-                keys=["image", "label"], prob=0.2, range_x=0.4, range_y=0.4, range_z=0.4
-            ),
         ]
     )
 
-    train_ds = TifDataset(data_dir, val=False, transform=transform)
-    val_ds = TifDataset(data_dir, val=True)
+    train_ds = TifDataset(
+        data_dir, val=False, transform=transform, num_samples=num_samples
+    )
+    val_ds = TifDataset(data_dir, val=True, num_samples=num_samples)
     train_loader = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True, num_workers=16
     )
