@@ -75,12 +75,6 @@ class TifDataset(Dataset):
         imgs = rearrange(imgs, "n x y z -> n x y z")
         labels = rearrange(labels, "n x y z -> n x y z")
 
-        if val:
-            imgs = imgs[-1:, ...]
-            labels = labels[-1:, ...]
-        else:
-            imgs = imgs[:-1, ...]
-            labels = labels[:-1, ...]
 
         with Pool(processes=8) as pool:
             func = partial(
@@ -89,7 +83,7 @@ class TifDataset(Dataset):
                 label=labels,
                 roi=(64, 64, 64),
                 num_samples=num_samples,
-                threshold=2000,
+                threshold=100,
             )
             results = pool.map(func, range(imgs.shape[0]))
             oimgs = [t[0] for t in results if t[0] is not None]
@@ -98,6 +92,17 @@ class TifDataset(Dataset):
             self.labels = np.concatenate(olabels, axis=0)
             self.imgs = rearrange(self.imgs, "n x y z -> n 1 x y z")
             self.labels = rearrange(self.labels, "n x y z -> n 1 x y z")
+
+        n = self.imgs.shape[0]
+        n_train = int(0.9 * n)
+        
+        if val:
+            self.imgs = self.imgs[n_train:, ...]
+            self.labels = self.labels[n_train:, ...]
+        else:
+            self.imgs = self.imgs[:n_train, ...]
+            self.labels = self.labels[:n_train, ...]
+            
 
     def __len__(self):
         return self.imgs.shape[0]

@@ -38,7 +38,7 @@ class Net(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), 1e-4)
-        lr_scheduler = MultiStepLR(optimizer, gamma=0.2, milestones=[1000, 3000, 5000])
+        lr_scheduler = MultiStepLR(optimizer, gamma=0.2, milestones=[100, 300, 800])
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 
     def training_step(self, batch, batch_idx):

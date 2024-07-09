@@ -27,11 +27,11 @@ def setup_model(model_dir):
     trainer = L.Trainer(
         accelerator=accelerator,
         devices=devices,
-        max_epochs=10000,
-        log_every_n_steps=5,
+        max_epochs=2000,
+        log_every_n_steps=1,
         strategy="auto",
         callbacks=callbacks,
-        check_val_every_n_epoch=5,
+        check_val_every_n_epoch=1,
     )
 
     return (model, trainer)
@@ -41,7 +41,7 @@ def train(
     data_dir: str,
     batch_size: int = 8,
     model_dir: str = "./model",
-    num_samples: int = 64,
+    num_samples: int = 256,
 ):
     print("Loading data...")
     transform = Compose(
