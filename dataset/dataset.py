@@ -52,53 +52,65 @@ def random_crop_by_label(
     return images, labels
 
 
+def load_image(data_dir: str, num_samples: int = 32):
+    img_files = glob(f'{data_dir.rstrip("/")}/images/*.tif')
+    label_files = glob(f'{data_dir.rstrip("/")}/label/*.tif')
+
+    assert len(img_files) > 0
+    assert len(img_files) == len(label_files)
+
+    img_files = sorted(img_files)
+    label_files = sorted(label_files)
+
+    imgs, labels = [], []
+    for ifile, mfile in zip(img_files, label_files):
+        imgs.append(tif.imread(ifile))
+        labels.append(tif.imread(mfile))
+
+    imgs = rearrange(imgs, "n x y z -> n x y z")
+    labels = rearrange(labels, "n x y z -> n x y z")
+
+    with Pool(processes=8) as pool:
+        func = partial(
+            random_crop_by_label,
+            img=imgs,
+            label=labels,
+            roi=(64, 64, 64),
+            num_samples=num_samples,
+            threshold=100,
+        )
+        results = pool.map(func, range(imgs.shape[0]))
+        oimgs = [t[0] for t in results if t[0] is not None]
+        olabels = [t[1] for t in results if t[1] is not None]
+        imgs = np.concatenate(oimgs, axis=0)
+        labels = np.concatenate(olabels, axis=0)
+        imgs = rearrange(imgs, "n x y z -> n 1 x y z")
+        labels = rearrange(labels, "n x y z -> n 1 x y z")
+
+    n = imgs.shape[0]
+    indices = np.random.permutation(n)
+    train_size = int(0.9 * n)
+    train_indices = indices[:train_size]
+    val_indices = indices[train_size:]
+    return (
+        imgs[train_indices, ...],
+        labels[train_indices, ...],
+        imgs[val_indices, ...],
+        labels[val_indices, ...],
+    )
+
+
 class TifDataset(Dataset):
     def __init__(
-        self, data_dir: str, transform=None, val: bool = False, num_samples=32
+        self,
+        imgs: npt.NDArray,
+        labels: npt.NDArray,
+        transform=None,
     ):
         self.transform = transform
 
-        img_files = glob(f'{data_dir.rstrip("/")}/images/*.tif')
-        label_files = glob(f'{data_dir.rstrip("/")}/label/*.tif')
-
-        assert len(img_files) > 0
-        assert len(img_files) == len(label_files)
-
-        img_files = sorted(img_files)
-        label_files = sorted(label_files)
-
-        imgs, labels = [], []
-        for ifile, mfile in zip(img_files, label_files):
-            imgs.append(tif.imread(ifile))
-            labels.append(tif.imread(mfile))
-
-        imgs = rearrange(imgs, "n x y z -> n x y z")
-        labels = rearrange(labels, "n x y z -> n x y z")
-
-        with Pool(processes=8) as pool:
-            func = partial(
-                random_crop_by_label,
-                img=imgs,
-                label=labels,
-                roi=(64, 64, 64),
-                num_samples=num_samples,
-                threshold=100,
-            )
-            results = pool.map(func, range(imgs.shape[0]))
-            oimgs = [t[0] for t in results if t[0] is not None]
-            olabels = [t[1] for t in results if t[1] is not None]
-            self.imgs = np.concatenate(oimgs, axis=0)
-            self.labels = np.concatenate(olabels, axis=0)
-            self.imgs = rearrange(self.imgs, "n x y z -> n 1 x y z")
-            self.labels = rearrange(self.labels, "n x y z -> n 1 x y z")
-
-        n = self.imgs.shape[0]
-        if val:
-            indices = np.random.choice(n, int(0.1 * n))
-        else:
-            indices = np.random.choice(n, int(0.9 * n))
-        self.imgs = self.imgs[indices, ...]
-        self.labels = self.labels[indices, ...]
+        self.imgs = imgs
+        self.labels = labels
 
     def __len__(self):
         return self.imgs.shape[0]
@@ -112,21 +124,3 @@ class TifDataset(Dataset):
         if self.transform:
             d = self.transform(d)
         return d
-
-
-if __name__ == "__main__":
-    dataset = TifDataset("/home/linhan/data/FIB-SEM/control_method1/", val=True)
-    print(len(dataset))
-    d = dataset[0]
-    print(d.keys())
-    image, label = d["image"], d["label"]
-    print(np.min(image), np.max(image))
-    print(np.min(label), np.max(label))
-
-    dataset = TifDataset("/home/linhan/data/FIB-SEM/control_method1/", val=False)
-    print(len(dataset))
-    d = dataset[0]
-    print(d.keys())
-    image, label = d["image"], d["label"]
-    print(np.min(image), np.max(image))
-    print(np.min(label), np.max(label))

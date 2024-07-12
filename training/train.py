@@ -4,7 +4,7 @@ import tyro
 from monai.transforms import Compose, RandAffined, RandFlipd, RandGaussianNoised
 from torch.utils.data import DataLoader
 
-from dataset.dataset import TifDataset
+from dataset.dataset import TifDataset, load_image
 from model.net import Net
 
 
@@ -27,7 +27,7 @@ def setup_model(model_dir):
     trainer = L.Trainer(
         accelerator=accelerator,
         devices=devices,
-        max_epochs=2000,
+        max_epochs=1000,
         log_every_n_steps=1,
         strategy="auto",
         callbacks=callbacks,
@@ -64,14 +64,14 @@ def train(
         ]
     )
 
-    train_ds = TifDataset(
-        data_dir, val=False, transform=transform, num_samples=num_samples
-    )
-    val_ds = TifDataset(data_dir, val=True, num_samples=num_samples)
+    train_imgs, train_labels, val_imgs, val_labels = load_image(data_dir, num_samples)
+
+    train_ds = TifDataset(train_imgs, train_labels, transform)
+    val_ds = TifDataset(val_imgs, val_labels)
     train_loader = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True, num_workers=16
     )
-    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=1)
+    val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=8)
 
     print("Setting up model...")
     (model, trainer) = setup_model(model_dir=model_dir)

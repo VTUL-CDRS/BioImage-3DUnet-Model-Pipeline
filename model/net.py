@@ -11,16 +11,6 @@ from torch.optim.lr_scheduler import MultiStepLR
 class Net(L.LightningModule):
     def __init__(self):
         super().__init__()
-        # self._model = UNet(
-        #     spatial_dims=3,
-        #     in_channels=1,
-        #     out_channels=1,
-        #     channels=(16, 32, 64, 128, 256),
-        #     strides=(2, 2, 2, 2),
-        #     num_res_units=2,
-        #     norm=Norm.BATCH,
-        # )
-
         self._model = FlexibleUNet(
             in_channels=1,
             out_channels=1,
@@ -38,7 +28,7 @@ class Net(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), 1e-4)
-        lr_scheduler = MultiStepLR(optimizer, gamma=0.2, milestones=[100, 300, 800])
+        lr_scheduler = MultiStepLR(optimizer, gamma=0.2, milestones=[200, 500])
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 
     def training_step(self, batch, batch_idx):
