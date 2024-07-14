@@ -4,25 +4,24 @@
 #SBATCH --partition=dgx_normal_q
 #SBATCH --nodes=1 
 #SBATCH --mem=128G
-#SBATCH --time=3-00:00:00
+#SBATCH --time=0-05:00:00
 #SBATCH --gres=gpu:1
 
 hostname
 source ~/.bashrc
 
-module load CUDA/11.8.0
-module load cuDNN/8.7.0.84-CUDA-11.8.0
+conda activate dgx
 
-conda activate imls
+export PYTHONPATH=/home/linhan/yinlin/projects/BioImage-3DUnet-Model-Pipeline
 
-mkdir rheb1 
-python predict.py ../training/exp_rheb_method1/rheb_best.h5 ~/yinlin/bio/raw_images/rheb/RhebNeuron1_Raw.tif rheb1/
+export ROOT=/home/linhan/yinlin/bio
+export RAW=$ROOT/raw_images/rheb
+export PRED=$ROOT/predictions/mixture
 
-mkdir rheb2 
-python predict.py ../training/exp_rheb_method1/rheb_best.h5 ~/yinlin/bio/raw_images/rheb/RhebNeuron2_Raw.tif rheb2/
+# for i in 1 2 3 4 
+for i in 4 
+do 
+  mkdir $PRED/rheb${i} 
+  python predict.py --ckpt ../epoch=919-val_dice_loss=0.0872.ckpt --inputfile $RAW/RhebNeuron${i}_Raw.tif --outputfile $PRED/rheb${i}/pred.tif
+done
 
-mkdir rheb3
-python predict.py ../training/exp_rheb_method1/rheb_best.h5 ~/yinlin/bio/raw_images/rheb/RhebNeuron3_Raw.tif rheb3/
-
-mkdir rheb4
-python predict.py ../training/exp_rheb_method1/rheb_best.h5 ~/yinlin/bio/raw_images/rheb/RhebNeuron4_raw.tif rheb4/
