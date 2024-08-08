@@ -8,7 +8,7 @@ import tyro
 def main(input_dir: str):
     root_dir = Path(input_dir)
 
-    for exp in ["control2", "control3", "rheb1", "rheb2"]:
+    for exp in ["control1", "control2", "control3", "control4", "control8", "rheb1", "rheb2", "rheb3", "rheb4"]:
         nums = []
         labels = []
         for cc in [300, 500]:
