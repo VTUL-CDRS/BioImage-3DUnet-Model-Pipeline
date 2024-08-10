@@ -1,7 +1,0 @@
-modelfile = ""
-inputfolder = "/projects/yinlin_chen/linhan/bio/train/mix_method1/images/"
-maskfolder = "/projects/yinlin_chen/linhan/bio/train/mix_method1/label/"
-load_model = "None"
-start_epochs = 0
-epochs = 3000
-steps_per_epoch = 500
