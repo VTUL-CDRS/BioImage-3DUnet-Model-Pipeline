@@ -12,14 +12,13 @@ source ~/.bashrc
 
 conda activate dgx
 
-export PYTHONPATH=/home/linhan/yinlin/projects/BioImage-3DUnet-Model-Pipeline
+export PYTHONPATH=../
 
 export ROOT=/home/linhan/yinlin/bio
 export RAW=$ROOT/raw_images/control
 export PRED=$ROOT/predictions/mixture2
 
-# for i in 1 2 3 4 
-for i in 8 
+for i in 1 2 3 4 8
 do 
   mkdir $PRED/control${i} 
   python predict.py --ckpt ../checkpoints_mixture2/epoch=999-val_dice_loss=0.1094.ckpt --inputfile $RAW/ControlNeuron${i}_Raw.tif --outputfile $PRED/control${i}/pred.tif

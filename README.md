@@ -35,3 +35,6 @@ pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 --extra-index-url https
    pip install -r requirements.txt
    ```
 
+## Run scripts
+
+Please enter train, prediction and postprocessing for details. Sometimes, you need to set PYTHONPATH to the root directory to enable the code to work. More elegant design is on the way.

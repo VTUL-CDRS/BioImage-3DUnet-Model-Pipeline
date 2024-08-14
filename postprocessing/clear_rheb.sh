@@ -18,7 +18,7 @@ export RPRED=/home/linhan/yinlin/bio/predictions/mixture2
 
 for thr in 127
 do 
-  for cc in 300
+  for cc in 200
   do
     echo $thr $cc
     # echo $thr $cc
