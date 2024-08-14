@@ -34,6 +34,19 @@ pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 --extra-index-url https
    ```bash
    pip install -r requirements.txt
    ```
+## Data
+
+To use this framework, you need two types of data. First is training data. Second is raw images. Training data is made of cropped raw images and its labels. Training data is cropped to 128x128x128, so its total size is smaller. On ARC, its location is:
+
+```bash
+/projects/yinlin_chen/linhan/bio/train/mix_method1
+```
+
+ The raw images is cropped to contain the whole neuron so its size is much bigger. We also provide a mask for each raw image to indicate the locations of neuron. On ARC, its location is:
+
+ ```bash
+ /projects/yinlin_chen/linhan/bio/raw_images
+ ```
 
 ## Run scripts
 
