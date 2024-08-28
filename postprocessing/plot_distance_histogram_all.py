@@ -8,12 +8,14 @@ import tyro
 
 def main(input_dir: str):
     root_dir = Path(input_dir)
+    output_dir = Path(input_dir) / "figures"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     control_map = mpl.colormaps["winter"]
     rheb_map = mpl.colormaps["spring"]
 
-    for cc in [300, 500]:
-        for thr in [30, 60, 127]:
+    for cc in [200]:
+        for thr in [127]:
             fig, ax = plt.subplots()
             for i, exp in enumerate(
                 [
@@ -39,7 +41,8 @@ def main(input_dir: str):
                 ax.hist(
                     stats["nn_distances"],
                     bins=100,
-                    range=(0, 80),
+                    range=(0, 50),
+                    density=False,
                     histtype="step",
                     alpha=0.8,
                     label=exp,
@@ -52,7 +55,7 @@ def main(input_dir: str):
             ax.set_ylabel("Number of objects falling in the distance range")
             ax.set_title(f"{cc}_{thr}")
             plt.tight_layout()
-            fig.savefig(f"distance_histogram_{cc}_{thr}.png")
+            fig.savefig(output_dir / f"distance_histogram_{cc}_{thr}.png")
 
 
 if __name__ == "__main__":
