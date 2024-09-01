@@ -23,10 +23,9 @@ conda activate cdrs
 python -m pip install --upgrade pip
 ```
 
-2. Install cudatookit and pytorch
+2. Install cudatookit 
 ```bash
 conda install -c "nvidia/label/cuda-11.7.1" cuda-toolkit
-pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
 ```
 
 3. Install other dependencies:
