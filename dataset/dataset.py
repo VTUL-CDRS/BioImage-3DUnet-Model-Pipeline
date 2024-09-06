@@ -1,15 +1,17 @@
 from functools import partial
 from glob import glob
 from multiprocessing import Pool
+from typing import List, Tuple
 
 import numpy as np
 import numpy.typing as npt
 import tifffile as tif
 from einops import rearrange
+from torch import fill
 from torch.utils.data import Dataset
 
 
-def rand_crop(img: npt.NDArray, label: npt.NDArray, roi: tuple[int, int, int]):
+def rand_crop(img: npt.NDArray, label: npt.NDArray, roi: Tuple[int, int, int]):
     h, w, d = label.shape
     sh, sw, sd = roi
 
@@ -26,15 +28,15 @@ def rand_crop(img: npt.NDArray, label: npt.NDArray, roi: tuple[int, int, int]):
 
 def random_crop_by_label(
     ind: int,
-    img: npt.NDArray,
-    label: npt.NDArray,
-    roi: tuple[int, int, int],
+    img: List[npt.NDArray],
+    label: List[npt.NDArray],
+    roi: Tuple[int, int, int],
     num_samples: int,
     threshold: int,
 ):
     limgs, llabels = [], []
-    for i in range(500):
-        simg, slabel = rand_crop(img[ind, ...], label[ind, ...], roi)
+    for i in range(num_samples):
+        simg, slabel = rand_crop(img[ind], label[ind], roi)
         if np.sum(slabel) > threshold:
             limgs.append(simg)
             llabels.append(slabel)
@@ -52,7 +54,7 @@ def random_crop_by_label(
     return images, labels
 
 
-def load_image(data_dir: str, num_samples: int = 32):
+def load_image(data_dir: str, num_samples: int = 32, filter=[]):
     img_files = glob(f'{data_dir.rstrip("/")}/images/*.tif')
     label_files = glob(f'{data_dir.rstrip("/")}/label/*.tif')
 
@@ -64,11 +66,23 @@ def load_image(data_dir: str, num_samples: int = 32):
 
     imgs, labels = [], []
     for ifile, mfile in zip(img_files, label_files):
-        imgs.append(tif.imread(ifile))
-        labels.append(tif.imread(mfile))
+        gt = tif.imread(mfile)
+        if len(filter) > 0:
+            if len(set(filter) & set(np.unique(gt))) == 0:
+                continue
 
-    imgs = rearrange(imgs, "n x y z -> n x y z")
-    labels = rearrange(labels, "n x y z -> n x y z")
+            gt = np.isin(gt, filter).astype(np.uint8)
+
+        raw = tif.imread(ifile)
+        if np.min(gt.shape) < 64:
+            print("before padding: ", gt.shape)
+            padding = [(0, max(0, 64 - gt.shape[i])) for i in range(3)]
+            gt = np.pad(gt, padding, mode="constant", constant_values=0)
+            raw = np.pad(raw, padding, mode="constant", constant_values=0)
+
+        print(ifile, gt.shape)
+        imgs.append(raw)
+        labels.append(gt)
 
     with Pool(processes=8) as pool:
         func = partial(
@@ -79,7 +93,7 @@ def load_image(data_dir: str, num_samples: int = 32):
             num_samples=num_samples,
             threshold=100,
         )
-        results = pool.map(func, range(imgs.shape[0]))
+        results = pool.map(func, range(len(labels)))
         oimgs = [t[0] for t in results if t[0] is not None]
         olabels = [t[1] for t in results if t[1] is not None]
         imgs = np.concatenate(oimgs, axis=0)

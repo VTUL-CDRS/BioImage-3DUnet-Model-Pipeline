@@ -15,3 +15,4 @@ scikit-learn
 scipy
 matplotlib
 tensorboardX
+huggingface-hub

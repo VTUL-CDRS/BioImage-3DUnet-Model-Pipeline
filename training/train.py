@@ -1,6 +1,7 @@
 import lightning as L
 import torch
 import tyro
+import numpy as np
 from monai.transforms import Compose, RandAffined, RandFlipd, RandGaussianNoised
 from torch.utils.data import DataLoader
 
@@ -42,7 +43,13 @@ def train(
     batch_size: int = 8,
     model_dir: str = "./model",
     num_samples: int = 256,
+    filter: str = "",
 ):
+    """Function
+
+    Args:
+        filter: example 3,4,5
+    """
     print("Loading data...")
     transform = Compose(
         [
@@ -50,21 +57,27 @@ def train(
                 keys=["image", "label"],
                 prob=0.15,
                 rotate_range=(
-                    0.05,
-                    0.05,
-                    0.05,
+                    np.pi / 6,
+                    np.pi / 6,
+                    np.pi / 6,
                 ),  # 3 parameters control the transform on 3 dimensions
-                scale_range=(0.1, 0.1, 0.1),
+                scale_range=(0.15, 0.15, 0.15),
                 mode=("bilinear", "nearest"),
+                padding_mode="border"
             ),
-            RandGaussianNoised("image", prob=0.15, std=0.01),
-            RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=0),
-            RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=1),
-            RandFlipd(keys=["image", "label"], prob=0.5, spatial_axis=2),
+            RandGaussianNoised("image", prob=0.15, std=0.1),
+            RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=0),
+            RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=1),
+            RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=2),
         ]
     )
 
-    train_imgs, train_labels, val_imgs, val_labels = load_image(data_dir, num_samples)
+    filter_list = []
+    if len(filter) > 0:
+        filter_list = [int(n) for n in filter.split(",")]
+    train_imgs, train_labels, val_imgs, val_labels = load_image(
+        data_dir, num_samples, filter_list
+    )
 
     train_ds = TifDataset(train_imgs, train_labels, transform)
     val_ds = TifDataset(val_imgs, val_labels)
