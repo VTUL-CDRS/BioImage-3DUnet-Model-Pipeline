@@ -1,0 +1,7 @@
+modelfile = "/mnt/research-data/chongyuh/3dunet/model/dynamic_cyclical_data_augmentation_new_standardized_stop_janelia/"
+inputfolder = "/mnt/research-data/chongyuh/3dunet/data/janelia-cosem-datasets/raw/"
+maskfolder = "/mnt/research-data/chongyuh/3dunet/data/janelia-cosem-datasets/label_f/"
+val_inputfolder = "/mnt/research-data/chongyuh/3dunet/data/janelia-cosem-datasets/val/raw/"
+val_maskfolder = "/mnt/research-data/chongyuh/3dunet/data/janelia-cosem-datasets/val/label_f/"
+load_model = "None"
+steps_per_epoch = 500
