@@ -1,7 +1,0 @@
-modelfile = "/mnt/research-data/chongyuh/3dunet/model/Rheb_Neuron_steve_0-6/"
-inputfolder = "/mnt/research-data/chongyuh/3dunet/data/Rheb_Neuron_Diseased_steve/images/"
-maskfolder = "/mnt/research-data/chongyuh/3dunet/data/Rheb_Neuron_Diseased_steve/Label/"
-load_model = "/mnt/research-data/chongyuh/3dunet/model/Rheb_Neuron_steve_0-5/random_block_sampling_v4_augmentations2000.h5"
-start_epochs = 0
-epochs = 3000
-steps_per_epoch = 500
