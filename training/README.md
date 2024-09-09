@@ -7,9 +7,12 @@ The `training` folder contains scripts and configuration files related to traini
 The `augmentation.py` script includes various data augmentation techniques that will be used during the training process to improve model robustness.
 
 
-## Training Configuration - `training_config.txt`
+## Training Configuration - `cyclical_training_config.txt`
 
-The `training_config.txt` file contains all the training parameters and paths required to train the model. You can configure the following parameters within this file:
+
+The `training_config.txt` file contains all the training parameters and paths required to train the model using `train_with_cyclical_augmentations_random_sample_nonfix.py`.
+
+You can configure the following parameters within this file:
 
 - `modelfile`: Path to the model file where the trained model will be saved.
 - `inputfolder`: Path to the input data folder.
