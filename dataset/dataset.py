@@ -7,7 +7,6 @@ import numpy as np
 import numpy.typing as npt
 import tifffile as tif
 from einops import rearrange
-from torch import fill
 from torch.utils.data import Dataset
 
 
@@ -54,7 +53,7 @@ def random_crop_by_label(
     return images, labels
 
 
-def load_image(data_dir: str, num_samples: int = 32, filter=[]):
+def load_image(data_dir: str, num_samples: int = 32, roi: int = 64, filter=[]):
     img_files = glob(f'{data_dir.rstrip("/")}/images/*.tif')
     label_files = glob(f'{data_dir.rstrip("/")}/label/*.tif')
 
@@ -74,9 +73,9 @@ def load_image(data_dir: str, num_samples: int = 32, filter=[]):
             gt = np.isin(gt, filter).astype(np.uint8)
 
         raw = tif.imread(ifile)
-        if np.min(gt.shape) < 64:
+        if np.min(gt.shape) < roi:
             print("before padding: ", gt.shape)
-            padding = [(0, max(0, 64 - gt.shape[i])) for i in range(3)]
+            padding = [(0, max(0, roi - gt.shape[i])) for i in range(3)]
             gt = np.pad(gt, padding, mode="constant", constant_values=0)
             raw = np.pad(raw, padding, mode="constant", constant_values=0)
 
@@ -89,7 +88,7 @@ def load_image(data_dir: str, num_samples: int = 32, filter=[]):
             random_crop_by_label,
             img=imgs,
             label=labels,
-            roi=(64, 64, 64),
+            roi=(roi, roi, roi),
             num_samples=num_samples,
             threshold=100,
         )
