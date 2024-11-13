@@ -5,7 +5,15 @@ import tyro
 from dataset.dataset import TifDataset, load_image
 from lightning.pytorch import loggers as pl_loggers
 from model.net import Net
-from monai.transforms import Compose, RandAffined, RandFlipd, RandGaussianNoised
+from monai.transforms import (
+    Compose,
+    RandAdjustContrastd,
+    RandAffined,
+    RandFlipd,
+    RandGaussianNoised,
+    RandGaussianSmoothd,
+    RandHistogramShiftd,
+)
 from torch.utils.data import DataLoader
 
 
@@ -26,7 +34,7 @@ def setup_model(model_dir):
     callbacks = [checkpoint]
 
     logger = pl_loggers.MLFlowLogger(
-        experiment_name=model_dir,
+        experiment_name=model_dir.split('/')[-1],
         tracking_uri="http://45.3.96.243:8088",
         synchronous=False,
     )
@@ -74,6 +82,15 @@ def train(
                 padding_mode="border",
             ),
             RandGaussianNoised("image", prob=0.15, std=0.1),
+                        RandGaussianSmoothd(
+                "image",
+                sigma_x=(0.5, 1.0),
+                sigma_y=(0.5, 1.0),
+                sigma_z=(0.5, 1.0),
+                prob=0.2,
+            ),
+            RandAdjustContrastd("image", prob=0.15),
+            RandHistogramShiftd("image", prob=0.1),
             RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=0),
             RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=1),
             RandFlipd(keys=["image", "label"], prob=0.3, spatial_axis=2),
